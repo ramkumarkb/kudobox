@@ -1,3 +1,25 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Fonts for cards */
+@font-face {
+    font-family: 'festus';
+    src: url('/fonts/festus.ttf');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'handyboldcyr';
+    src: url('/fonts/handyboldcyr.ttf');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'marckscript';
+    src: url('/fonts/marckscript.ttf');
+    font-weight: normal;
+    font-style: normal;
+}

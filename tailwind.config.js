@@ -5,7 +5,13 @@ module.exports = {
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+        festus: ["festus", "cursive"],
+        handyboldcyr: ["handyboldcyr", "sans-serif"],
+        marckscript: ["marckscript", "cursive"],
+      },
+    },
   },
   plugins: [
     require('@tailwindcss/forms'),

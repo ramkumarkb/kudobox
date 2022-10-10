@@ -193,6 +193,7 @@ export function classNames({ classes = [] }: { classes?: any[]; } = {}) {
     return classes.filter(Boolean).join(' ')
 }
 
+// TODO: Use Generics
 export function swtichtabs(tabs: tab[], selected: number) {
     tabs.map((tab, index) => {
         (index === selected)
