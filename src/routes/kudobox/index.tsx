@@ -1,5 +1,5 @@
 import { component$, useStore } from '@builder.io/qwik';
-import { KudoCardEditor } from '../../components/tui-textarea/tui-textarea';
+import { KudoCardEditor, KudoCardEditor2 } from '../../components/tui-textarea/tui-textarea';
 import { CardsMenu, ImageSrcStore } from '../../components/cards-list/cards-list';
 
 // import { CanvasPoC } from '../../components/canvas-poc/canvas-poc';
@@ -15,6 +15,7 @@ export default component$(() => {
             <CardsMenu store={store} />
             {/* <KudoCardEditor imageSrc={store.kudoImageSrc} /> */}
             <KudoCardEditor store={store} />
+            {/* <KudoCardEditor2 store={store} /> */}
             {/* <CanvasPoC /> */}
         </>
     );

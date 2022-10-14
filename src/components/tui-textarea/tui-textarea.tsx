@@ -1,4 +1,4 @@
-import { component$, Signal, useSignal, useStore } from '@builder.io/qwik';
+import { component$, Signal, useSignal, useStore, useWatch$ } from '@builder.io/qwik';
 import { ImageSrcStore, classNames } from '../../components/cards-list/cards-list';
 // import '../../index.css';
 
@@ -19,6 +19,7 @@ export function getCanvas(): CanvasRenderingContext2D {
     //     ctx.font = '48px serif';
     //     ctx.fillText('Testing text', 10, 50);
     // }
+    // canvas.toDataURL
     return ctx!
 }
 
@@ -50,9 +51,6 @@ export function writeKudoToCanvas(ctx: CanvasRenderingContext2D, multiLineText: 
     }
 }
 
-interface KudoCardEditorProps {
-    store: ImageSrcStore
-}
 
 // get the selected tailwind fontname, as it has the font-<name> format
 export function getTwFontname(fonts: font[]): string {
@@ -64,14 +62,23 @@ export function getFontname(fonts: font[]): string {
     return fonts.filter((font) => (font.current)).flatMap(t => t.name)[0];
 }
 
+interface KudoCardEditorProps {
+    store: ImageSrcStore
+}
+
+export interface FontSrcStore {
+    fonts: font[],
+    // getKudoImageSrc$: PropFunction<() => string>;
+}
+
 export const KudoCardEditor = component$((props: KudoCardEditorProps) => {
 
-    // const selectedFont = useSignal(fonttabs);
     const selectedFont = useStore<FontSrcStore>({ fonts: fonttabs }, { recursive: true });
 
     return (
         <>
             {/* <label htmlFor="comment" className="block text-sm font-medium text-gray-700"> */}
+            {/* <FontMenuList fonts={selectedFont.fonts} /> */}
             <FontMenuList fonts={selectedFont.fonts} />
             <div className="relative">
                 <div>
@@ -103,13 +110,54 @@ export const KudoCardEditor = component$((props: KudoCardEditorProps) => {
     );
 });
 
-export interface FontSrcStore {
-    fonts: font[],
-    // getKudoImageSrc$: PropFunction<() => string>;
-}
+export const KudoCardEditor2 = component$((props: KudoCardEditorProps) => {
+
+    const selectedFont = useSignal<font[]>(fonttabs);
+    // useWatch$(({ track }) => { track(selectedFont); });
+
+    return (
+        <>
+            {/* <label htmlFor="comment" className="block text-sm font-medium text-gray-700"> */}
+            {/* <FontMenuList fonts={selectedFont.fonts} /> */}
+            <FontMenuList2 fonts={selectedFont} />
+            <div className="relative">
+                <div>
+                    <canvas id="kudo-canvas2" width="660" height="460" className='absolute inset-0 border-2 border-blue-400'></canvas>
+                </div>
+                <div className="relative">
+                    <img
+                        className="object-contain"
+                        src={props.store.kudoImageSrc}
+                        alt=""
+                    />
+                    {/* <div className="absolute inset-0 bg-indigo-800 mix-blend-multiply" aria-hidden="true" /> */}
+                </div>
+                <div className="absolute inset-0 bg-transparent mt-2 pt-28 pl-8">
+                    <textarea
+                        rows={10}
+                        cols={46}
+                        maxLength={400}
+                        name="kudo"
+                        id="kudotext"
+                        wrap="on"
+                        className={"text-2xl bg-transparent rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 " + getTwFontname(selectedFont.value)}
+                    // defaultValue={''}
+                    />
+                </div>
+            </div>
+            <KudoCanvas2 imgstore={props.store} fontsignal={selectedFont} />
+        </>
+    );
+});
+
 interface KudoCanvasProps {
     imgstore: ImageSrcStore,
     fontstore: FontSrcStore
+}
+
+interface KudoCanvas2Props {
+    imgstore: ImageSrcStore,
+    fontsignal: Signal<font[]>
 }
 
 export const KudoCanvas = component$((props: KudoCanvasProps) => {
@@ -131,6 +179,25 @@ export const KudoCanvas = component$((props: KudoCanvasProps) => {
     );
 });
 
+export const KudoCanvas2 = component$((props: KudoCanvas2Props) => {
+
+    return (
+        <div>
+            <div className='border-2 border-black'>
+                <canvas id="kudo-canvas" width="660" height="460" className='border-2 border-blue-400'></canvas>
+            </div>
+            <div className='pt-2'>
+                <button
+                    className="inline-flex items-center rounded-md border border-transparent bg-indigo-600 px-3 py-2 text-sm font-medium leading-4 text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                    onClick$={() => createKudoCard(props.imgstore.kudoImageSrc, getFontname(props.fontsignal.value))}>Create Card</button>
+                <button
+                    className="inline-flex items-center rounded-md border border-transparent bg-indigo-600 ml-2 px-3 py-2 text-sm font-medium leading-4 text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                    onClick$={() => createKudoCard(props.imgstore.kudoImageSrc, getFontname(props.fontsignal.value))}>Share Card</button>
+            </div>
+        </div>
+    );
+});
+
 interface font {
     twname: string,
     name: string,
@@ -144,7 +211,7 @@ export const fonttabs: font[] = [
     { twname: 'font-marckscript', name: 'marckscript', href: '#', current: false },
 ]
 
-interface FontMenuListProps2 {
+interface FontMenuList2Props {
     fonts: Signal<font[]>
 }
 interface FontMenuListProps {
@@ -152,6 +219,7 @@ interface FontMenuListProps {
 }
 
 export function swtichfonts(fonts: font[], selected: number) {
+    console.log("onClick$ is called!")
     fonts.map((font, index) => {
         (index === selected)
             ? font.current = true
@@ -160,7 +228,7 @@ export function swtichfonts(fonts: font[], selected: number) {
 }
 
 export const FontMenuList = component$<FontMenuListProps>(({ fonts }) => {
-
+    console.log("Menu rendered - useStore is working!")
     return (
         <div className="border-b border-gray-200 pb-5 sm:pb-0">
             {/* <h3 className="text-lg font-medium leading-6 text-gray-900">Kudo Cards</h3> */}
@@ -197,6 +265,58 @@ export const FontMenuList = component$<FontMenuListProps>(({ fonts }) => {
                                     })}
                                 aria-current={font.current ? 'page' : undefined}
                                 onClick$={() => swtichfonts(fonts, index)}
+                            >
+                                Your Message
+                            </a>
+                        ))}
+                    </nav>
+                </div>
+            </div>
+        </div>
+    );
+});
+
+export const FontMenuList2 = component$<FontMenuList2Props>(({ fonts }) => {
+
+    // console.log("Menu rendered - useSignal is working!")
+    // useWatch$(({ track }) => { track(fonts.value); });
+
+    return (
+        <div className="border-b border-gray-200 pb-5 sm:pb-0">
+            {/* <h3 className="text-lg font-medium leading-6 text-gray-900">Kudo Cards</h3> */}
+            <div className="mt-3 sm:mt-4">
+                <div className="sm:hidden">
+                    {/* <label htmlFor="current-tab" className="sr-only"> */}
+                    <label className="sr-only">
+                        Select a Font
+                    </label>
+                    <select
+                        id="current-tab"
+                        name="current-tab"
+                        className="block w-full rounded-md border-gray-300 py-2 pl-3 pr-10 text-base focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
+                    //defaultValue={tabs.find((tab) => tab.current).name}
+                    >
+                        {fonts.value.map((font) => (
+                            <option key={font.name} className={font.twname}>Your Message</option>
+                        ))}
+                    </select>
+                </div>
+                <div className="hidden sm:block">
+                    <nav className="-mb-px flex space-x-8">
+                        {fonts.value.map((font, index) => (
+                            <a
+                                key={font.name}
+                                // href={font.href}
+                                className={classNames(
+                                    {
+                                        classes: [font.current
+                                            ? 'border-indigo-500 text-indigo-600'
+                                            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
+                                            'whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-xl', font.twname
+                                        ]
+                                    })}
+                                aria-current={font.current ? 'page' : undefined}
+                                onClick$={() => swtichfonts(fonts.value, index)}
                             >
                                 Your Message
                             </a>
