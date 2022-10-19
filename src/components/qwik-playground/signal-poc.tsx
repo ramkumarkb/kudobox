@@ -20,24 +20,31 @@ export function selectedComic(comics: Comix[]): string {
     return comics.filter((comic) => (comic.selected)).flatMap(c => c.name)[0]
 }
 
-export function swapComix(comics: Comix[]): void {
+export function swapComix(lib: Lib): Lib {
     console.log("selectComix is called!");
     let next = 0;
-    for (let i = 0; i < comics.length; i++) {
-        if (comics[i].selected) {
-            (i === (comics.length - 1)) ? next = 0 : next = i + 1;
-            comics[i].selected = false
-            comics[next].selected = true;
+    for (let i = 0; i < lib.rack.length; i++) {
+        if (lib.rack[i].selected) {
+            (i === (lib.rack.length - 1)) ? next = 0 : next = i + 1;
+            lib.rack[i].selected = false
+            lib.rack[next].selected = true;
             break;
         }
     }
     console.log('comic name ' + comics[next].name);
+    return { rack: lib.rack, count: lib.count }
     // comics.map((comic, index) => {
     //     (index === 2) ? nextSelected = 0 : nextSelected = index+1;
     //     (comic.selected)
     //         ? comic.selected = false
     //         : comics[nextSelected].selected = true
     // })
+}
+
+export function incrementCount(lib: Lib): Lib {
+
+    return { rack: lib.rack, count: ++lib.count }
+
 }
 
 export const SignalPoC = component$(() => {
@@ -47,11 +54,12 @@ export const SignalPoC = component$(() => {
 
     return (
         <>
-            <button onClick$={() => swapComix(newrack.value.rack)}>Swap from Parent</button>
+            <button onClick$={() => { newrack.value = swapComix(newrack.value) }}>Swap from Parent</button>
             <br />
-            <button onClick$={() => newrack.value.count++}>Increment from Parent</button>
+            <button onClick$={() => { newrack.value = incrementCount(newrack.value) }}>Increment from Parent</button>
             <br />
-            <button onClick$={() => test.value++}>Increment Test Parent</button>
+            <button onClick$={() => test.value++}>Increment Value Parent</button>
+            <hr /> <br /> <hr />
             <ChildSignal library={newrack} />
             <br />
             <Child2Signal test={test} />
@@ -64,14 +72,17 @@ interface ChildProps {
 }
 
 export const ChildSignal = component$<ChildProps>(({ library }) => {
+
     return <div>
 
-        Counter: {library.value.count} <br /> <br />
-        <button onClick$={() => library.value.count++}>Increment from Child</button>
+
+        <button onClick$={() => { library.value = incrementCount(library.value) }}>Increment from Child</button>
         <br />
-        <button onClick$={() => swapComix(library.value.rack)}>Swap from Child</button>
+        <button onClick$={() => { library.value = swapComix(library.value) }}>Swap from Child</button>
         <br />
         Comic: {selectedComic(library.value.rack)}
+        <br />
+        Counter: {library.value.count} <br />
     </div>
 });
 
@@ -83,7 +94,7 @@ export const Child2Signal = component$<Child2Props>(({ test }) => {
     return <div>
         Test Counter: {test.value} <br />
         <br />
-        <button onClick$={() => test.value++}>Increment Test from Child</button>
+        <button onClick$={() => test.value++}>Increment Value from Child</button>
         <br />
     </div>
 });
